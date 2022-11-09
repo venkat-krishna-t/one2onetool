@@ -27,7 +27,7 @@ pipeline {
 				script {							
 					dir("${env.WORKSPACE}") {
 						echo " Check out the source code"
-						checkout([$class: 'GitSCM', branches: [[name: 'release']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'GitHub_Secret', url: 'https://github.com/venkat-krishna-t/one2onetool.git']]])
+						checkoutCode()
 					}
 				}
 			}
