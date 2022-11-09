@@ -13,4 +13,5 @@ EXPOSE 3000
 
 #Run the one2onetool application
 WORKDIR /app/one2onetool
+RUN npm ci --prod
 CMD ["node", "index.js"]
