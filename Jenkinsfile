@@ -1,5 +1,9 @@
 Exception_Start_Tag = "Jenkins stage exception: "
 Exception_End_Tag = "Exit Pipeline execution "
+REPO_PATH= 'venkatkrishnat/assessment'
+IMAGE_TAG_NAME = 'one2onetool'
+IMAGE_TAG_VERSION = '1.0'
+ARTIFACTORY_REPO = 'https://hub.docker.com/repository/docker'
 
 pipeline {
     agent {
@@ -77,6 +81,36 @@ pipeline {
 				}
 			}
         }
+		stage('Image build & Push Image to Artifactory') {
+			steps {
+				script {
+					node('aws_docker_container_lx') {
+						dir("${env.WORKSPACE}") {
+							withCredentials([usernamePassword(credentialsId: 'DOCKERIDS', passwordVariable: 'PSW', usernameVariable: 'USR')]){
+								sh """
+								sudo docker login ${ARTIFACTORY_REPO} --username $USR --password $PSW
+								IMAGE_ID=$(sudo docker build --no-cache -t $IMAGE_TAG_NAME:$IMAGE_TAG_VERSION . | awk '/Successfully built/{print $NF}')
+								echo "Image tagged to $IMAGE_ID $ARTIFACTORY_REPO/$REPO_PATH"
+								sudo docker tag $IMAGE_ID $ARTIFACTORY_REPO/$REPO_PATH
+								echo "Image pushing to $ARTIFACTORY_REPO/$REPO_PATH"
+								sudo docker push $ARTIFACTORY_REPO/$REPO_PATH
+								"""
+							} 
+						}
+					}
+				}
+			}
+			post {        
+				failure {
+					script {
+						echo " Jenkins job failed - Sending Mail"
+						EXCEPTION_LOG = Exception_Start_Tag + "Stage ImageBuild failed " + Exception_End_Tag
+						sendEmail("${EXCEPTION_LOG}")
+					}	
+				}
+			}
+		}
+
 	}
 }
 def sendEmail(error) {
