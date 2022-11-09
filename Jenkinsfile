@@ -1,9 +1,9 @@
 Exception_Start_Tag = "Jenkins stage exception: "
 Exception_End_Tag = "Exit Pipeline execution "
-REPO_PATH= 'repository/docker/venkatkrishnat/assessment'
-IMAGE_TAG_NAME = 'one2onetool'
-IMAGE_TAG_VERSION = 1.0
-ARTIFACTORY_REPO = 'registry.hub.docker.com'
+def REPO_PATH= 'repository/docker/venkatkrishnat/assessment'
+def IMAGE_TAG_NAME = "locahost/one2onetool"
+def IMAGE_TAG_VERSION = 1.0
+def ARTIFACTORY_REPO = 'registry.hub.docker.com'
 
 pipeline {
     agent {
@@ -12,14 +12,14 @@ pipeline {
         }
     }
     stages {
-		stage("Clean Workspace") {
+		/*stage("Clean Workspace") {
 			steps {
 				script {
 					echo "Clearing the working directory"
 					cleanWs()
 				}
 			}
-		}
+		}*/
 		stage("CheckoutCode") {
 			steps {
 				script {					   							
@@ -80,7 +80,7 @@ pipeline {
 					}	
 				}
 			}
-        }
+        }*/
 		stage('Image build & Push Image to Artifactory') {
 			steps {
 				script {
@@ -90,7 +90,7 @@ pipeline {
 							withCredentials([usernamePassword(credentialsId: 'DOCKERIDS', passwordVariable: 'PSW', usernameVariable: 'USR')]){
 								sh '''
 								sudo docker login "${ARTIFACTORY_REPO}" --username $USR --password $PSW
-								IMAGE_ID=$(sudo docker build --no-cache -t "${IMAGE_TAG_NAME}":\"$IMAGE_TAG_VERSION" . | grep 'Successfully built' | cut -d" " -f3)
+								IMAGE_ID=$(sudo docker build --no-cache -t "${IMAGE_TAG_NAME}":"${IMAGE_TAG_VERSION}" . | grep 'Successfully built' | cut -d" " -f3)
 								echo "Image tagged to $IMAGE_ID "${ARTIFACTORY_REPO}"/"${REPO_PATH}""
 								sudo docker tag $IMAGE_ID "${ARTIFACTORY_REPO}"/"${REPO_PATH}"
 								echo "Image pushing to "${ARTIFACTORY_REPO}"/"${REPO_PATH}""
