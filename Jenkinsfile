@@ -5,13 +5,13 @@ pipeline {
         }
     }
     stages {
-		stage("Clean Workspace") {
+		/*stage("Clean Workspace") {
 			steps {
 				script {
 					cleanWs()
 				}
 			}
-		}
+		}*/
 		stage("Checkout Code") {
 			steps {
 				script {
