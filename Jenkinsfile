@@ -7,9 +7,6 @@ pipeline {
             label 'master'
         }
     }
-	environment {
-        DATA_FILE = ''
-    }
     stages {
 		/*stage("Clean Workspace") {
 			steps {
@@ -38,11 +35,9 @@ pipeline {
             steps {
 				script {
 					try{
-						dir("${env.WORKSPACE}") {
-							withEnv(["${env.DATA_FILE}"]) {
-								echo " Build the one2onetool application"
-								bat "npm install"
-							}
+						dir("${env.WORKSPACE}") {							
+							echo " Build the one2onetool application"
+							bat "npm install"
 						}
 					}catch(Exception exec){
 						EXCEPTION_LOG = Exception_Start_Tag + "Stage Check out and Error " + exec + Exception_End_Tag
@@ -56,10 +51,8 @@ pipeline {
                 script {
 					try{
 						dir("${env.WORKSPACE}") {
-							withEnv(["${env.DATA_FILE}"]) {
-								echo " Test the one2onetool application"
-								bat "npm test"
-							}
+							echo " Test the one2onetool application"
+							bat "npm test"
 						}
 					}catch(Exception exec){
 						EXCEPTION_LOG = Exception_Start_Tag + "Stage Check out and Error " + exec + Exception_End_Tag
