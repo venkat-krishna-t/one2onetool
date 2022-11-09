@@ -1,15 +1,15 @@
 FROM mhart/alpine-node
+MAINTAINER VENKAT
 
 #copy sourcde inside image
-COPY -rp * /tmp/one2onetool
-COPY -rp /tmp/one2onetool /app/
+COPY .  /home/ec2-user/opt/one2onetool
 
 #Provide permissions for the application dir and remove tmp files
-RUN rm -rf /tmp/one2onetool/ && \
-    chmod -R 755 /app/one2onetool
+RUN chmod -R 755 /home/ec2-user/opt/one2onetool
+
 #Port expose
 EXPOSE 3000
 
 #Run the one2onetool application
-WORKDIR /app
-CMD ["node", "/app/index.js"]
+WORKDIR /home/ec2-user/opt/one2onetool
+CMD ["node", "index.js"]
