@@ -65,11 +65,12 @@ pipeline {
 				}
             }
         }
-		post {        
-			failure {
-				 echo " Jenkins job failed - Sending Mail"
-				 emailext body: "<br>\n\n Error: ${error}\n\n<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL build: ${env.BUILD_URL}", recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: 'one2onetool:Notf - CI/CD pipeline failed'       
-			}
-		}
+		
     }
+	post {        
+		failure {
+			 echo " Jenkins job failed - Sending Mail"
+			 emailext body: "<br>\n\n Error: ${error}\n\n<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL build: ${env.BUILD_URL}", recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: 'one2onetool:Notf - CI/CD pipeline failed'       
+		}
+	}
 }
