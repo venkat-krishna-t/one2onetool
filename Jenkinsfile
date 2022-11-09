@@ -113,15 +113,45 @@ pipeline {
 				}
 			}
 		}
+		stage('Image Deploy') {
+			steps {
+				script {
+					node('aws_docker_container_lx') {
+						dir("${env.WORKSPACE}") {
+							checkoutCode()
+							withCredentials([usernamePassword(credentialsId: 'DOCKERIDS', passwordVariable: 'PSW', usernameVariable: 'USR')]){
+								sh """
+								sudo docker login "${ARTIFACTORY_REPO}" --username $USR --password $PSW
+								echo "Pull the image "${registry}"":""${BUILD_NUMBER}"
+								sudo docker pull "${registry}"":""${BUILD_NUMBER}"
+								echo "Run the image "${registry}"":""${BUILD_NUMBER}"
+								sudo docker run -p 3000":"3000  "${registry}"":""${BUILD_NUMBER}"
+								"""
+							} 
+						}
+					}
+				}
+			}
+			post {        
+				failure {
+					script {
+						echo " Jenkins job failed - Sending Mail"
+						EXCEPTION_LOG = Exception_Start_Tag + "Stage Image Deploy failed " + Exception_End_Tag
+						sendEmail("${EXCEPTION_LOG}")
+					}	
+				}
+			}
+		}
 
 	}
 }
 def sendEmail(error) {
 	emailext (
-		from: "DevelopersRecipientProvider",
-		to: "RequesterRecipientProvider",
-		subject: "Notf DevOps pipeline failed",
-		body: '<br>Error ${error}<br>'
+			from: 'DevelopersRecipientProvider',
+			to: 'RequesterRecipientProvider',
+			subject: 'DevOps:Notf - CI/CD pipeline failed',
+			mimeType: 'text/html',
+			body: '<br>\n\n Error: ${error}<br>'
 		)	
 }
 def checkoutCode() {
