@@ -1,9 +1,7 @@
 Exception_Start_Tag = "Jenkins stage exception: "
 Exception_End_Tag = "Exit Pipeline execution "
 def REPO_PATH= 'repository/docker/venkatkrishnat/assessment'
-def IMAGE_TAG_NAME = "locahost/one2onetool"
-def IMAGE_TAG_VERSION = 1.0
-def ARTIFACTORY_REPO = 'registry.hub.docker.com'
+def ARTIFACTORY_REPO = "registry.hub.docker.com"
 
 pipeline {
     agent {
@@ -11,6 +9,10 @@ pipeline {
             label 'master'
         }
     }
+	environment {
+		registry = "venkatkrishnat/assessment"
+		registryCredential = 'dockerhub'
+	}
     stages {
 		/*stage("Clean Workspace") {
 			steps {
@@ -88,14 +90,14 @@ pipeline {
 						dir("${env.WORKSPACE}") {
 							checkoutCode()
 							withCredentials([usernamePassword(credentialsId: 'DOCKERIDS', passwordVariable: 'PSW', usernameVariable: 'USR')]){
-								sh '''
+								sh """
 								sudo docker login "${ARTIFACTORY_REPO}" --username $USR --password $PSW
-								IMAGE_ID=$(sudo docker build --no-cache -t "${IMAGE_TAG_NAME}":"${IMAGE_TAG_VERSION}" . | grep 'Successfully built' | cut -d" " -f3)
-								echo "Image tagged to $IMAGE_ID "${ARTIFACTORY_REPO}"/"${REPO_PATH}""
-								sudo docker tag $IMAGE_ID "${ARTIFACTORY_REPO}"/"${REPO_PATH}"
-								echo "Image pushing to "${ARTIFACTORY_REPO}"/"${REPO_PATH}""
-								sudo docker push "${ARTIFACTORY_REPO}"/"${REPO_PATH}"
-								'''
+								IMAGE_ID=\$(sudo docker build --no-cache -t "${registry}"":""${BUILD_NUMBER}" . | grep 'Successfully built' | cut -d" " -f3)
+								echo "Image tagged to "${registry}"":""${BUILD_NUMBER}"
+								sudo docker tag "\${IMAGE_ID}" "${registry}"":""${BUILD_NUMBER}"							
+								echo "Image pushing to "${registry}"":""${BUILD_NUMBER}"
+								sudo docker push "${registry}"":""${BUILD_NUMBER}"
+								"""
 							} 
 						}
 					}
