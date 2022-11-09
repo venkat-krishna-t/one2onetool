@@ -121,10 +121,8 @@ def sendEmail(error) {
 		from: "DevelopersRecipientProvider",
 		to: "RequesterRecipientProvider",
 		subject: "Notf DevOps pipeline failed",
-		mimeType: 'text/html',
 		body: '<br>Error ${error}<br>'
-	)
-	
+		)	
 }
 def checkoutCode() {
 	checkout([$class: 'GitSCM', branches: [[name: 'staging']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'GitHub_Secret', url: 'https://github.com/venkat-krishna-t/one2onetool.git']]])
