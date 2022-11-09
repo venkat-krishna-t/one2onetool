@@ -5,18 +5,38 @@ pipeline {
         }
     }
     stages {
-        stage('Build') {
+		stage("Clean Workspace") {
+			steps {
+				script {
+					cleanWs()
+				}
+			}
+		}
+		stage("Checkout Code") {
+			steps {
+				script {
+					dir("${env.WORKSPACE}") {
+						checkout([$class: 'GitSCM', branches: [[name: 'staging']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'GitHub_Secret', url: 'https://github.com/venkat-krishna-t/one2onetool.git']]])
+					}
+				}
+			}
+		}
+        stage("Build") {
             steps {
               script {
-                  bat 'npm install'
+				dir("${env.WORKSPACE}") {
+                  bat "npm install"
+				}
               }
             }
         }
-        stage('Test') {
+        stage("Test") {
             steps {
                 script {
-                  bat 'npm test'
-              }
+					dir("${env.WORKSPACE}") {
+						bat "npm test"
+					}
+				}
             }
         }
     }
