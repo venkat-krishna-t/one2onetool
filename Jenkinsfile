@@ -1,8 +1,10 @@
+// Variable declaration
 Exception_Start_Tag = "Jenkins stage exception: "
 Exception_End_Tag = "Exit Pipeline execution "
 def REPO_PATH= 'repository/docker/venkatkrishnat/assessment'
 def ARTIFACTORY_REPO = "registry.hub.docker.com"
 
+// Jenkins pipeline definations
 pipeline {
     agent {
         node {
@@ -24,9 +26,10 @@ pipeline {
 		}
 		stage("CheckoutCode") {
 			steps {
-				script {					   							
+				script {							
 					dir("${env.WORKSPACE}") {
 						echo " Check out the source code"
+						echo " Calling the checkoutCode method"
 						checkoutCode()
 					}
 				}
@@ -36,20 +39,19 @@ pipeline {
 					script {
 						echo " Jenkins job failed - Sending Mail"
 						EXCEPTION_LOG = Exception_Start_Tag + "Stage CheckoutCode failed " + Exception_End_Tag
+						echo " Calling the checkoutCode method"
 						sendEmail("${EXCEPTION_LOG}")
-					}	
+					}
 				}
 			}
-        }
+		}
         stage("Build") {
             steps {
 				script {
-					dir("${env.WORKSPACE}") {
-						withEnv(["DATA_FILE=Questions-test.json"]) {
-							echo " Build the one2onetool application"
-							bat "npm install"
-						}
-					}
+					dir("${env.WORKSPACE}") {							
+						echo " Build the one2onetool application"
+						bat "npm install"
+					}					
 				}
             }
 			post {        
@@ -57,6 +59,7 @@ pipeline {
 					script {
 						echo " Jenkins job failed - Sending Mail"
 						EXCEPTION_LOG = Exception_Start_Tag + "Stage Build failed " + Exception_End_Tag
+						echo " Calling the sendMail method"
 						sendEmail("${EXCEPTION_LOG}")
 					}	
 				}
@@ -66,10 +69,8 @@ pipeline {
             steps {
                 script {
 					dir("${env.WORKSPACE}") {
-						withEnv(["DATA_FILE=Questions-test.json"]) {
-							echo " Test the one2onetool application"
-							bat "npm test"
-						}
+						echo " Test the one2onetool application"
+						bat "npm test"
 					}
 				}
             }
@@ -78,6 +79,7 @@ pipeline {
 					script {
 						echo " Jenkins job failed - Sending Mail"
 						EXCEPTION_LOG = Exception_Start_Tag + "Stage Test failed " + Exception_End_Tag
+						echo " Calling the sendMail method"
 						sendEmail("${EXCEPTION_LOG}")
 					}	
 				}
@@ -88,6 +90,7 @@ pipeline {
 				script {
 					node('aws_docker_container_lx') {
 						dir("${env.WORKSPACE}") {
+							echo " Calling the checkoutCode method"
 							checkoutCode()
 							withCredentials([usernamePassword(credentialsId: 'DOCKERIDS', passwordVariable: 'PSW', usernameVariable: 'USR')]){
 								sh """
@@ -108,6 +111,7 @@ pipeline {
 					script {
 						echo " Jenkins job failed - Sending Mail"
 						EXCEPTION_LOG = Exception_Start_Tag + "Stage ImageBuild failed " + Exception_End_Tag
+						echo " Calling the sendMail method"
 						sendEmail("${EXCEPTION_LOG}")
 					}	
 				}
@@ -118,7 +122,6 @@ pipeline {
 				script {
 					node('aws_docker_container_lx') {
 						dir("${env.WORKSPACE}") {
-							checkoutCode()
 							withCredentials([usernamePassword(credentialsId: 'DOCKERIDS', passwordVariable: 'PSW', usernameVariable: 'USR')]){
 								sh """
 								sudo docker login "${ARTIFACTORY_REPO}" --username $USR --password $PSW
@@ -137,14 +140,16 @@ pipeline {
 					script {
 						echo " Jenkins job failed - Sending Mail"
 						EXCEPTION_LOG = Exception_Start_Tag + "Stage Image Deploy failed " + Exception_End_Tag
+						echo " Calling the sendMail method"
 						sendEmail("${EXCEPTION_LOG}")
 					}	
 				}
 			}
 		}
-
 	}
 }
+
+// Methods defination
 def sendEmail(error) {
 	emailext (
 			from: 'DevelopersRecipientProvider',
@@ -152,7 +157,8 @@ def sendEmail(error) {
 			subject: 'DevOps:Notf - CI/CD pipeline failed',
 			mimeType: 'text/html',
 			body: '<br>\n\n Error: ${error}<br>'
-		)	
+	)
+	
 }
 def checkoutCode() {
 	checkout([$class: 'GitSCM', branches: [[name: 'staging']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'GitHub_Secret', url: 'https://github.com/venkat-krishna-t/one2onetool.git']]])
