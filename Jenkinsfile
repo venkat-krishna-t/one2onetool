@@ -4,6 +4,9 @@ pipeline {
             label 'master'
         }
     }
+    environment {
+        DATA_FILE = ''        
+    }
     stages {
 		/*stage("Clean Workspace") {
 			steps {
