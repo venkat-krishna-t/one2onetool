@@ -121,7 +121,7 @@ def sendEmail(error) {
 		from: 'DevelopersRecipientProvider',
 		to: 'RequesterRecipientProvider',
 		subject: 'Notf - DevOps-pipeline failed',
-		mimeType: 'text/html',
+		mimeType: "text/html",
 		body: '<br>Error- ${error}<br>'
 	)
 	
