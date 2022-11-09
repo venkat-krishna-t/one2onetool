@@ -1,8 +1,10 @@
+// Variable declaration
 Exception_Start_Tag = "Jenkins stage exception: "
 Exception_End_Tag = "Exit Pipeline execution "
 def REPO_PATH= 'repository/docker/venkatkrishnat/assessment'
 def ARTIFACTORY_REPO = "registry.hub.docker.com"
 
+// Jenkins pipeline definations
 pipeline {
     agent {
         node {
@@ -27,6 +29,7 @@ pipeline {
 				script {							
 					dir("${env.WORKSPACE}") {
 						echo " Check out the source code"
+						echo " Calling the checkoutCode method"
 						checkoutCode()
 					}
 				}
@@ -36,6 +39,7 @@ pipeline {
 					script {
 						echo " Jenkins job failed - Sending Mail"
 						EXCEPTION_LOG = Exception_Start_Tag + "Stage CheckoutCode failed " + Exception_End_Tag
+						echo " Calling the checkoutCode method"
 						sendEmail("${EXCEPTION_LOG}")
 					}
 				}
@@ -55,6 +59,7 @@ pipeline {
 					script {
 						echo " Jenkins job failed - Sending Mail"
 						EXCEPTION_LOG = Exception_Start_Tag + "Stage Build failed " + Exception_End_Tag
+						echo " Calling the sendMail method"
 						sendEmail("${EXCEPTION_LOG}")
 					}	
 				}
@@ -74,6 +79,7 @@ pipeline {
 					script {
 						echo " Jenkins job failed - Sending Mail"
 						EXCEPTION_LOG = Exception_Start_Tag + "Stage Test failed " + Exception_End_Tag
+						echo " Calling the sendMail method"
 						sendEmail("${EXCEPTION_LOG}")
 					}	
 				}
@@ -84,6 +90,7 @@ pipeline {
 				script {
 					node('aws_docker_container_lx') {
 						dir("${env.WORKSPACE}") {
+							echo " Calling the checkoutCode method"
 							checkoutCode()
 							withCredentials([usernamePassword(credentialsId: 'DOCKERIDS', passwordVariable: 'PSW', usernameVariable: 'USR')]){
 								sh """
@@ -104,6 +111,36 @@ pipeline {
 					script {
 						echo " Jenkins job failed - Sending Mail"
 						EXCEPTION_LOG = Exception_Start_Tag + "Stage ImageBuild failed " + Exception_End_Tag
+						echo " Calling the sendMail method"
+						sendEmail("${EXCEPTION_LOG}")
+					}	
+				}
+			}
+		}
+		stage('Image Deploy') {
+			steps {
+				script {
+					node('aws_docker_container_lx') {
+						dir("${env.WORKSPACE}") {
+							withCredentials([usernamePassword(credentialsId: 'DOCKERIDS', passwordVariable: 'PSW', usernameVariable: 'USR')]){
+								sh """
+								sudo docker login "${ARTIFACTORY_REPO}" --username $USR --password $PSW
+								echo "Pull the image "${registry}"":""${BUILD_NUMBER}"
+								sudo docker pull "${registry}"":""${BUILD_NUMBER}"
+								echo "Run the image "${registry}"":""${BUILD_NUMBER}"
+								sudo docker run -p 3000":"3000  "${registry}"":""${BUILD_NUMBER}"
+								"""
+							} 
+						}
+					}
+				}
+			}
+			post {        
+				failure {
+					script {
+						echo " Jenkins job failed - Sending Mail"
+						EXCEPTION_LOG = Exception_Start_Tag + "Stage Image Deploy failed " + Exception_End_Tag
+						echo " Calling the sendMail method"
 						sendEmail("${EXCEPTION_LOG}")
 					}	
 				}
@@ -111,6 +148,8 @@ pipeline {
 		}
 	}
 }
+
+// Methods defination
 def sendEmail(error) {
 	emailext (
 			from: 'DevelopersRecipientProvider',
