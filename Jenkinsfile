@@ -4,6 +4,9 @@ pipeline {
             label 'master'
         }
     }
+	environment {
+        DATA_FILE = 'Questions-test.json'        
+    }
     stages {
 		/*stage("Clean Workspace") {
 			steps {
