@@ -25,7 +25,7 @@ pipeline {
 				script {					   							
 					dir("${env.WORKSPACE}") {
 						echo " Check out the source code"
-						checkout([$class: 'GitSCM', branches: [[name: 'staging']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'GitHub_Secret', url: 'https://github.com/venkat-krishna-t/one2onetool.git']]])
+						checkoutCode()
 					}
 				}
 			}
@@ -86,6 +86,7 @@ pipeline {
 				script {
 					node('aws_docker_container_lx') {
 						dir("${env.WORKSPACE}") {
+							checkoutCode()
 							withCredentials([usernamePassword(credentialsId: 'DOCKERIDS', passwordVariable: 'PSW', usernameVariable: 'USR')]){
 								sh '''
 								sudo docker login "${ARTIFACTORY_REPO}" --username $USR --password $PSW
@@ -122,4 +123,7 @@ def sendEmail(error) {
 			body: '<br>\n\n Error: ${error}<br>'
 	)
 	
+}
+def checkoutCode() {
+	checkout([$class: 'GitSCM', branches: [[name: 'staging']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'GitHub_Secret', url: 'https://github.com/venkat-krishna-t/one2onetool.git']]])
 }
