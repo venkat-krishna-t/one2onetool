@@ -26,7 +26,7 @@ pipeline {
 		}
 		stage("CheckoutCode") {
 			steps {
-				script {							
+				script {					   							
 					dir("${env.WORKSPACE}") {
 						echo " Check out the source code"
 						echo " Calling the checkoutCode method"
@@ -41,17 +41,19 @@ pipeline {
 						EXCEPTION_LOG = Exception_Start_Tag + "Stage CheckoutCode failed " + Exception_End_Tag
 						echo " Calling the checkoutCode method"
 						sendEmail("${EXCEPTION_LOG}")
-					}
+					}	
 				}
 			}
-		}
+        }
         stage("Build") {
             steps {
 				script {
-					dir("${env.WORKSPACE}") {							
-						echo " Build the one2onetool application"
-						bat "npm install"
-					}					
+					dir("${env.WORKSPACE}") {
+						withEnv(["DATA_FILE=Questions-test.json"]) {
+							echo " Build the one2onetool application"
+							bat "npm install"
+						}
+					}
 				}
             }
 			post {        
@@ -69,8 +71,10 @@ pipeline {
             steps {
                 script {
 					dir("${env.WORKSPACE}") {
-						echo " Test the one2onetool application"
-						bat "npm test"
+						withEnv(["DATA_FILE=Questions-test.json"]) {
+							echo " Test the one2onetool application"
+							bat "npm test"
+						}
 					}
 				}
             }
@@ -146,6 +150,7 @@ pipeline {
 				}
 			}
 		}
+
 	}
 }
 
@@ -157,8 +162,7 @@ def sendEmail(error) {
 			subject: 'DevOps:Notf - CI/CD pipeline failed',
 			mimeType: 'text/html',
 			body: '<br>\n\n Error: ${error}<br>'
-	)
-	
+		)	
 }
 def checkoutCode() {
 	checkout([$class: 'GitSCM', branches: [[name: 'staging']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'GitHub_Secret', url: 'https://github.com/venkat-krishna-t/one2onetool.git']]])
