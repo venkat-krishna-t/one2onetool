@@ -1,5 +1,7 @@
 Exception_Start_Tag = "Jenkins stage exception: "
 Exception_End_Tag = "Exit Pipeline execution "
+def REPO_PATH= 'repository/docker/venkatkrishnat/assessment'
+def ARTIFACTORY_REPO = "registry.hub.docker.com"
 
 pipeline {
     agent {
@@ -7,6 +9,10 @@ pipeline {
             label 'master'
         }
     }
+	environment {
+		registry = "venkatkrishnat/assessment"
+		registryCredential = 'dockerhub'
+	}
     stages {
 		stage("Clean Workspace") {
 			steps {
@@ -73,6 +79,36 @@ pipeline {
 				}
 			}
         }
+		stage('Image build & Push Image to Artifactory') {
+			steps {
+				script {
+					node('aws_docker_container_lx') {
+						dir("${env.WORKSPACE}") {
+							checkoutCode()
+							withCredentials([usernamePassword(credentialsId: 'DOCKERIDS', passwordVariable: 'PSW', usernameVariable: 'USR')]){
+								sh """
+								sudo docker login "${ARTIFACTORY_REPO}" --username $USR --password $PSW
+								IMAGE_ID=\$(sudo docker build --no-cache -t "${registry}"":""${BUILD_NUMBER}" . | grep 'Successfully built' | cut -d" " -f3)
+								echo "Image tagged to "${registry}"":""${BUILD_NUMBER}"
+								sudo docker tag "\${IMAGE_ID}" "${registry}"":""${BUILD_NUMBER}"							
+								echo "Image pushing to "${registry}"":""${BUILD_NUMBER}"
+								sudo docker push "${registry}"":""${BUILD_NUMBER}"
+								"""
+							} 
+						}
+					}
+				}
+			}
+			post {        
+				failure {
+					script {
+						echo " Jenkins job failed - Sending Mail"
+						EXCEPTION_LOG = Exception_Start_Tag + "Stage ImageBuild failed " + Exception_End_Tag
+						sendEmail("${EXCEPTION_LOG}")
+					}	
+				}
+			}
+		}
 	}
 }
 def sendEmail(error) {
@@ -84,4 +120,7 @@ def sendEmail(error) {
 			body: '<br>\n\n Error: ${error}<br>'
 	)
 	
+}
+def checkoutCode() {
+	checkout([$class: 'GitSCM', branches: [[name: 'staging']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'GitHub_Secret', url: 'https://github.com/venkat-krishna-t/one2onetool.git']]])
 }
