@@ -118,11 +118,11 @@ pipeline {
 }
 def sendEmail(error) {
 	emailext (
-			from: 'DevelopersRecipientProvider',
-			to: 'RequesterRecipientProvider',
-			subject: 'DevOps:Notf - CI/CD pipeline failed',
-			mimeType: 'text/html',
-			body: '<br>\n\n Error: ${error}<br>'
+		from: 'DevelopersRecipientProvider',
+		to: 'RequesterRecipientProvider',
+		subject: 'Notf:DevOps-pipeline failed',
+		mimeType: 'text/html',
+		body: '<br>\n\n Error: ${error}<br>'
 	)
 	
 }
