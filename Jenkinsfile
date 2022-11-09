@@ -7,6 +7,9 @@ pipeline {
             label 'master'
         }
     }
+	environment {
+        DATA_FILE = ''
+    }
     stages {
 		/*stage("Clean Workspace") {
 			steps {
@@ -36,7 +39,7 @@ pipeline {
 				script {
 					try{
 						dir("${env.WORKSPACE}") {
-							withEnv(["DATA_FILE="""]) {
+							withEnv(["${DATA_FILE}"]) {
 								echo " Build the one2onetool application"
 								bat "npm install"
 							}
@@ -53,7 +56,7 @@ pipeline {
                 script {
 					try{
 						dir("${env.WORKSPACE}") {
-							withEnv(["DATA_FILE="""]) {
+							withEnv(["${DATA_FILE}"]) {
 								echo " Test the one2onetool application"
 								bat "npm test"
 							}
