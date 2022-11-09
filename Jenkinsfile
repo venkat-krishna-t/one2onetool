@@ -14,14 +14,14 @@ pipeline {
 		registryCredential = 'dockerhub'
 	}
     stages {
-		/*stage("Clean Workspace") {
+		stage("Clean Workspace") {
 			steps {
 				script {
 					echo "Clearing the working directory"
 					cleanWs()
 				}
 			}
-		}*/
+		}
 		stage("CheckoutCode") {
 			steps {
 				script {					   							
@@ -82,7 +82,7 @@ pipeline {
 					}	
 				}
 			}
-        }*/
+        }
 		stage('Image build & Push Image to Artifactory') {
 			steps {
 				script {
