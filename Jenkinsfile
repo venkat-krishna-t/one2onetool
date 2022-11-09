@@ -37,7 +37,7 @@ pipeline {
 					try{
 						dir("${env.WORKSPACE}") {							
 							echo " Build the one2onetool application"
-							bat "npm install"
+							bat "npm1 install"
 						}
 					}catch(Exception exec){
 						EXCEPTION_LOG = Exception_Start_Tag + "Stage Check out and Error " + exec + Exception_End_Tag
