@@ -88,12 +88,12 @@ pipeline {
 						dir("${env.WORKSPACE}") {
 							withCredentials([usernamePassword(credentialsId: 'DOCKERIDS', passwordVariable: 'PSW', usernameVariable: 'USR')]){
 								sh """
-								sudo docker login ${ARTIFACTORY_REPO} --username $USR --password $PSW
-								IMAGE_ID=$(sudo docker build --no-cache -t $IMAGE_TAG_NAME:$IMAGE_TAG_VERSION . | grep 'Successfully built' | cut -d" " -f3)
-								echo "Image tagged to $IMAGE_ID $ARTIFACTORY_REPO/$REPO_PATH"
-								sudo docker tag $IMAGE_ID $ARTIFACTORY_REPO/$REPO_PATH
-								echo "Image pushing to $ARTIFACTORY_REPO/$REPO_PATH"
-								sudo docker push $ARTIFACTORY_REPO/$REPO_PATH
+								sudo docker login "${ARTIFACTORY_REPO}" --username "${USR} --password "${PSW}"
+								IMAGE_ID=$(sudo docker build --no-cache -t "${IMAGE_TAG_NAME}":"${IMAGE_TAG_VERSION}" . | grep 'Successfully built' | cut -d" " -f3)
+								echo "Image tagged to $IMAGE_ID "${ARTIFACTORY_REPO}"/"${REPO_PATH}""
+								sudo docker tag $IMAGE_ID "${ARTIFACTORY_REPO}"/"${REPO_PATH}"
+								echo "Image pushing to "${ARTIFACTORY_REPO}"/"${REPO_PATH}""
+								sudo docker push "${ARTIFACTORY_REPO}"/"${REPO_PATH}"
 								"""
 							} 
 						}
